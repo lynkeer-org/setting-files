@@ -1,0 +1,167 @@
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+Table "owner" {
+  "id" uuid [unique, not null, increment]
+  "first_name" VARCHAR(255)
+  "last_name" VARCHAR(255)
+  "email" VARCHAR(255)
+  "phone" VARCHAR(255)
+  "password_hash" TEXT
+  "created_at" TIMESTAMP
+  "active" bool
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "customer" {
+  "id" uuid [unique, not null, increment]
+  "first_name" VARCHAR(255)
+  "last_name" VARCHAR(255)
+  "email" VARCHAR(255)
+  "phone" VARCHAR(255)
+  "birth_date" DATE
+  "device_type_id" uuid
+  "registration_method_id" uuid
+  "created_at" TIMESTAMP
+  "active" bool
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "pass" {
+  "id" uuid [unique, not null, increment]
+  "owner_id" uuid
+  "pass_type_id" uuid
+  "title" VARCHAR(255)
+  "stamp_goal" integer
+  "qr_url" TEXT
+  "logo_url" TEXT
+  "text_color" TEXT
+  "background_color" TEXT
+  "google_class_id" TEXT
+  "apple_pass_type_identifier" TEXT
+  "created_at" TIMESTAMP
+  "active" bool
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "stamp" {
+  "id" uuid [unique, not null, increment]
+  "customer_pass_id" uuid
+  "issued_at" TIMESTAMP
+  "active" bool
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "reward" {
+  "id" uuid [unique, not null, increment]
+  "customer_pass_id" uuid
+  "active" bool
+  "claimed_at" TIMESTAMP
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "pass_type" {
+  "id" uuid
+  "type" TEXT
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "pass_field" {
+  "id" uuid
+  "pass_id" uuid
+  "key" varchar
+  "label" varchar
+  "value" varchar
+  "field_type" varchar // ENUM: "primary_field", "secondary_field", "back_field"
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Enum pass_field_type {
+  primary_field
+  secondaty_field
+  back_field
+}
+
+
+Table "registration_method_type" {
+  "id" uuid [unique, not null, increment]
+  "name" VARCHAR(255)
+  "description" TEXT
+  "active" bool
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "device_type" {
+  "id" uuid [unique, not null, increment]
+  "name" VARCHAR(255)
+  "description" TEXT
+  "active" BOOL
+
+  Indexes {
+    id [pk]
+  }
+}
+
+Table "customer_pass" {
+  "id" uuid [unique, not null, increment]
+  "customer_id" uuid
+  "pass_id" uuid
+  "apple_serial_number" text
+  "apple_authentication_token" text
+  "apple_device_library_id" text
+  "apple_push_token" text
+  "google_id_object" text
+  "google_wallet_url" text
+  "qr_value" text
+  "added_at" TIMESTAMP
+  "active" bool
+
+  Indexes {
+    id [pk]
+    (customer_id, pass_id) [unique, name: "uq_customer_pass"]
+  }
+}
+
+Ref:"pass"."owner_id" > "owner"."id" [update: no action, delete: no action]
+
+Ref:"customer"."device_type_id" > "device_type"."id" [update: no action, delete: no action]
+
+Ref:"customer"."registration_method_id" > "registration_method_type"."id" [update: no action, delete: no action]
+
+Ref:"customer"."id" < "customer_pass"."customer_id" [update: no action, delete: no action]
+
+Ref:"customer_pass"."pass_id" > "pass"."id" [update: no action, delete: no action]
+
+Ref:"customer_pass"."id" < "stamp"."customer_pass_id" [update: no action, delete: no action]
+
+Ref:"customer_pass"."id" < "reward"."customer_pass_id" [update: no action, delete: no action]
+
+
+Ref: "pass"."pass_type_id" > "pass_type"."id"
+
+
+Ref: "pass"."id" < "pass_field"."pass_id"
