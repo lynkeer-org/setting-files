@@ -105,6 +105,8 @@ Table "customer_pass" {
   "id" uuid [unique, not null, increment]
   "customer_id" uuid
   "pass_id" uuid
+  "active_stamps" int
+  "active_rewards" int
   "device" text // ENUM: ios, android, web
   "registration_method" text // qr, manual, link
   "apple_serial_number" text
@@ -139,3 +141,5 @@ Ref: "pass"."pass_type_id" > "pass_type"."id"
 
 
 Ref: "pass"."id" < "pass_field"."pass_id"
+
+Ref: "customer"."email" < "customer"."phone"
